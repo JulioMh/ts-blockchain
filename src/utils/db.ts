@@ -24,7 +24,7 @@ export const loadBlockHistory = (): BlockFs[] => {
 }
 
 export const saveNewBlock = (block: BlockFs) => {
-  const blocks = readFile(pathToBlockHistory);
+  const blocks = loadBlockHistory();
   writeFileSync(pathToBlockHistory, JSON.stringify([...blocks, block], null, 2))
 }
 

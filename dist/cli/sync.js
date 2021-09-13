@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const commander_1 = require("commander");
 const path_1 = __importDefault(require("path"));
 const pathToTx = path_1.default.resolve(__dirname, './tx/sync-tx.js');
-const pathToBalances = path_1.default.resolve(__dirname, './balance/sync-balances.js');
+const pathToBalances = path_1.default.resolve(__dirname, './balances/sync-balances.js');
 const pathToRun = path_1.default.resolve(__dirname, './node/sync-run.js');
 commander_1.program
     .version('0.0.1')

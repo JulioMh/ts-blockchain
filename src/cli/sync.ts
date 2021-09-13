@@ -4,7 +4,7 @@ import { program } from 'commander';
 import path from 'path'
 
 const pathToTx = path.resolve(__dirname, './tx/sync-tx.js')
-const pathToBalances = path.resolve(__dirname, './balance/sync-balances.js')
+const pathToBalances = path.resolve(__dirname, './balances/sync-balances.js')
 const pathToRun = path.resolve(__dirname, './node/sync-run.js')
 
 program
