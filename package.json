@@ -1,0 +1,42 @@
+{
+  "name": "ts-crypto-stream",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/cli/sync.js",
+  "bin": {
+    "sync-cli": "./dist/cli/sync.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc -p .; node ./dist/cli/sync.js",
+    "build": "tsc -p .",
+    "lint": "eslint --ignore-path .gitignore . --ext .ts",
+    "lint:fix": "npm run lint -- --fix"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/clear": "^0.1.2",
+    "@types/commander": "^2.12.2",
+    "@types/figlet": "^1.5.4",
+    "@types/node": "^16.9.1",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jest": "^23.1.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-security": "^1.4.0",
+    "prettier": "^2.0.5"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "clear": "^0.1.0",
+    "commander": "^8.2.0",
+    "figlet": "^1.5.2",
+    "nodemon": "^2.0.12",
+    "path": "^0.12.7",
+    "ts-node": "^10.2.1"
+  }
+}
