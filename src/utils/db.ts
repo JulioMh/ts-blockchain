@@ -1,9 +1,9 @@
-import { readFileSync, writeFileSync, appendFileSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
 import crypto from 'crypto'
 import { Balances } from '../model/Account'
 import Tx from '../model/Tx'
 import path from 'path'
-import Block from '../model/Block'
+import Block, { BlockFs } from '../model/Block'
 
 const pathToTxHistory = path.resolve(__dirname, '../database/tx.json')
 const pathToGenesis = path.resolve(__dirname, '../database/genesis.json')
@@ -23,13 +23,17 @@ export const loadTxHistory = (): Tx[] => {
   return rawTxs.map((rawTx: any) => new Tx(rawTx.from, rawTx.to, rawTx.value))
 }
 
-export const saveTxHistory = (txHistory: Tx[]) => {
-  writeFileSync(pathToTxHistory, JSON.stringify(txHistory, null, 2))
-  console.log(readFile(pathToTxHistory))
+export const loadBlockHistory = (): BlockFs[] => {
+  return readFile(pathToBlockHistory)
 }
 
-export const saveNewBlock = (block: Block) => {
-  appendFileSync(pathToBlockHistory, JSON.stringify(block, null, 2))
+export const saveTxHistory = (txHistory: Tx[]) => {
+  writeFileSync(pathToTxHistory, JSON.stringify(txHistory, null, 2))
+}
+
+export const saveNewBlock = (block: BlockFs) => {
+  const blocks = readFile(pathToBlockHistory);
+  writeFileSync(pathToBlockHistory, JSON.stringify([...blocks, block], null, 2))
 }
 
 export const hashBlock = (block: Block) => {

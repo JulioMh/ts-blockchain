@@ -1,9 +1,7 @@
-import { loadGenesisBalances, loadTxHistory, saveNewBlock } from '../utils/db'
+import { loadGenesisBalances, loadBlockHistory, saveNewBlock } from '../utils/db'
 import { Balances } from './Account'
-import Block, { Hash } from './Block';
+import Block, { Hash, BlockFs } from './Block';
 import Tx from './Tx'
-
-
 
 export default class State {
   balances: Balances;
@@ -16,15 +14,19 @@ export default class State {
     this.latestBlockHash = '';
   }
 
-  add(tx: Tx) {
-    this.applyTx(tx)
+  addTx(tx: Tx) {
+    this.apply(tx)
     this.txMempool = [...this.txMempool, tx]
   }
 
+  addBlock(block: Block) {
+    block.txPool.forEach(tx => this.addTx(tx))
+  }
+
   persist(){
-    const block = new Block(this.latestBlockHash, (new Date()).valueOf(), this.txMempool);
+    const block = new Block(this.latestBlockHash, new Date().valueOf(), this.txMempool);
     const newHash = block.hash();
-    saveNewBlock(block);
+    saveNewBlock(block.toBlockFs());
     this.latestBlockHash = newHash;
   }
 
@@ -33,18 +35,24 @@ export default class State {
     const genesisBalances = loadGenesisBalances();
     Object.keys(genesisBalances).forEach(account => state.balances[account] = genesisBalances[account])
 
-    const txHistory = loadTxHistory()
-    txHistory.forEach(tx => state.applyTx(tx))
+    const blockHistory = loadBlockHistory()
+    blockHistory.forEach(block => state.applyBlock(block))
 
-    state.hash = hashTxHistory();
+    state.latestBlockHash = blockHistory.length ? 
+      blockHistory[blockHistory.length - 1].hash
+      : String(0).padStart(64, '0');
 
     return state
   }
 
-  private applyTx(tx: Tx) {
+  private applyBlock(block: BlockFs) {
+    block.block.payload.forEach(tx => this.apply(tx))
+  }
+
+  private apply(tx: Tx) {
     const fromBalance = this.balances[tx.from]
     const toBalance = this.balances[tx.to]
-    if(!fromBalance || fromBalance <= tx.value) {
+    if(!fromBalance || fromBalance < tx.value) {
       throw new Error(`${tx.from} doesn't have enough balance`)
     }
 

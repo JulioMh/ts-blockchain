@@ -8,7 +8,7 @@ const commander_1 = require("commander");
 const State_1 = __importDefault(require("../model/State"));
 commander_1.program.action(() => {
     const state = State_1.default.newStateFromDisk();
-    console.log(`Accounts balances at ${state.snapshot.substring(0, 12)}...`);
+    console.log(`Accounts balances at ${state.latestBlockHash.substring(0, 12)}...`);
     console.log('------------------');
     Object.keys(state.balances).forEach(account => console.log(`${account}: ${state.balances[account]}`));
 });

@@ -8,6 +8,6 @@ export default class Tx {
   constructor(from: Account, to: Account, value: number) {
     this.from = from;
     this.to = to;
-    this.value = value;    
+    this.value = value;
   }
 }

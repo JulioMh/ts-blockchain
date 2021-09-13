@@ -22,6 +22,6 @@ if (!from || !to || !value) {
 }
 const state = State_1.default.newStateFromDisk();
 const tx = new Tx_1.default(from, to, parseFloat(value));
-state.add(tx);
+state.addTx(tx);
 state.persist();
 //# sourceMappingURL=sync-tx-add.js.map
