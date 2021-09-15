@@ -9,7 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsc -p .; node ./dist/cli/sync.js",
-    "build": "tsc -p .",
+    "build": "tsc -p .; npm i --global ./",
     "lint": "eslint --ignore-path .gitignore . --ext .ts",
     "lint:fix": "npm run lint -- --fix"
   },

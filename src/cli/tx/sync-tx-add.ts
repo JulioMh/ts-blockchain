@@ -4,6 +4,7 @@ import { program } from 'commander';
 import Tx from '../../model/Tx';
 import State from '../../model/State';
 import { exit } from 'process';
+import Block from '../../model/Block';
 
 program
   .option('-f, --from <from>', 'Sender name')
@@ -21,5 +22,6 @@ if(!from || !to || !value) {
 
 const state = State.newStateFromDisk();
 const tx = new Tx(from, to, parseFloat(value));
-state.addTx(tx);
-state.persist();
+
+const block = new Block(state.getLatestBlockHash(), state.getLatestBlockNumber(), new Date().valueOf(), [tx])
+state.addBlock(block)

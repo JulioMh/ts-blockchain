@@ -9,36 +9,52 @@ class State {
     constructor() {
         this.balances = {};
         this.txMempool = [];
-        this.latestBlockHash = '';
-    }
-    addTx(tx) {
-        this.apply(tx);
-        this.txMempool = [...this.txMempool, tx];
     }
     addBlock(block) {
-        block.txPool.forEach(tx => this.addTx(tx));
-    }
-    persist() {
-        const block = new Block_1.default(this.latestBlockHash, new Date().valueOf(), this.txMempool);
+        this.applyBlock(block);
         const newHash = block.hash();
         (0, db_1.saveNewBlock)(block.toBlockFs());
         this.latestBlockHash = newHash;
+        this.latestBlock = block;
+    }
+    getLatestBlock() {
+        return this.latestBlock;
+    }
+    getLatestBlockHash() {
+        return this.latestBlockHash;
+    }
+    getLatestBlockNumber() {
+        var _a;
+        return ((_a = this.latestBlock) === null || _a === void 0 ? void 0 : _a.getBlockNumber()) || 0;
+    }
+    nextBlockNumber() {
+        var _a;
+        return this.latestBlock ? (_a = this.latestBlock) === null || _a === void 0 ? void 0 : _a.getBlockNumber() : 0;
     }
     static newStateFromDisk() {
         const state = new State();
         const genesisBalances = (0, db_1.loadGenesisBalances)();
         Object.keys(genesisBalances).forEach(account => state.balances[account] = genesisBalances[account]);
         const blockHistory = (0, db_1.loadBlockHistory)();
-        blockHistory.forEach(block => state.applyBlock(block));
-        state.latestBlockHash = blockHistory.length ?
-            blockHistory[blockHistory.length - 1].hash
-            : String(0).padStart(64, '0');
+        blockHistory.forEach(blockFs => {
+            let block = Block_1.default.fromBlockFs(blockFs);
+            state.applyBlock(block);
+            state.latestBlockHash = blockFs.hash;
+            state.latestBlock = block;
+        });
+        if (!state.latestBlockHash)
+            state.latestBlockHash = String(0).padStart(64, '0');
         return state;
     }
     applyBlock(block) {
-        block.block.payload.forEach(tx => this.apply(tx));
+        if (block.getBlockNumber() !== this.nextBlockNumber())
+            throw new Error(`Next expected block number should be ${this.nextBlockNumber()} not ${block.getBlockNumber()}`);
+        if (block.getParentHash() !== this.getLatestBlockHash()) {
+            throw new Error(`Next block parent hash must be ${this.getLatestBlockHash()} not ${block.getParentHash()}`);
+        }
+        block.txPool.forEach(tx => this.applyTx(tx));
     }
-    apply(tx) {
+    applyTx(tx) {
         const fromBalance = this.balances[tx.from];
         const toBalance = this.balances[tx.to];
         if (!fromBalance || fromBalance < tx.value) {

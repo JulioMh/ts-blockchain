@@ -27,10 +27,3 @@ export const saveNewBlock = (block: BlockFs) => {
   const blocks = loadBlockHistory();
   writeFileSync(pathToBlockHistory, JSON.stringify([...blocks, block], null, 2))
 }
-
-export const hashBlock = (block: Block) => {
-  const hashSum = crypto.createHash('sha256');
-  hashSum.update(JSON.stringify(block))
-
-  return hashSum.digest('hex')
-}

@@ -8,6 +8,7 @@ const commander_1 = require("commander");
 const Tx_1 = __importDefault(require("../../model/Tx"));
 const State_1 = __importDefault(require("../../model/State"));
 const process_1 = require("process");
+const Block_1 = __importDefault(require("../../model/Block"));
 commander_1.program
     .option('-f, --from <from>', 'Sender name')
     .option('-t, --to <to>', 'Beneficiary name')
@@ -22,6 +23,6 @@ if (!from || !to || !value) {
 }
 const state = State_1.default.newStateFromDisk();
 const tx = new Tx_1.default(from, to, parseFloat(value));
-state.addTx(tx);
-state.persist();
+const block = new Block_1.default(state.getLatestBlockHash(), state.getLatestBlockNumber(), new Date().valueOf(), [tx]);
+state.addBlock(block);
 //# sourceMappingURL=sync-tx-add.js.map

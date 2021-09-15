@@ -8,13 +8,13 @@ const commander_1 = require("commander");
 const path_1 = __importDefault(require("path"));
 const pathToTx = path_1.default.resolve(__dirname, './tx/sync-tx.js');
 const pathToBalances = path_1.default.resolve(__dirname, './balances/sync-balances.js');
-const pathToRun = path_1.default.resolve(__dirname, './node/sync-run.js');
+const pathToRun = path_1.default.resolve(__dirname, './node/sync-node.js');
 commander_1.program
     .version('0.0.1')
     .description('CLI to interact with centralized sync blockchain')
     .command('tx', 'Interact with transactions (add, ...)', { executableFile: pathToTx })
     .command('balances', 'Interact with balances (list, ...)', { executableFile: pathToBalances })
-    .command('run', 'Run a new sync-blockchain node', { executableFile: pathToRun })
+    .command('node', 'Run or stop a node', { executableFile: pathToRun })
     .action(() => {
     commander_1.program.help();
 })
