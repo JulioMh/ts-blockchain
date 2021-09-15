@@ -1,4 +1,4 @@
-export type Account = string
+export type Account = string;
 export type Balances = {
-  [key: string]: number
-}
+  [key: string]: number;
+};

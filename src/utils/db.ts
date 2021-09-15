@@ -1,29 +1,30 @@
-import { readFileSync, writeFileSync, existsSync } from 'fs'
-import crypto from 'crypto'
-import { Balances } from '../model/Account'
-import path from 'path'
-import Block, { BlockFs } from '../model/Block'
+import crypto from 'crypto';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import path from 'path';
 
-const pathToGenesis = path.resolve(__dirname, '../database/genesis.json')
-const pathToBlockHistory = path.resolve(__dirname, '../database/block.json')
+import { Balances } from '../model/Account';
+import Block, { BlockFs } from '../model/Block';
+
+const pathToGenesis = path.resolve(__dirname, '../database/genesis.json');
+const pathToBlockHistory = path.resolve(__dirname, '../database/block.json');
 
 const readFile = (path: string): any => {
-  return JSON.parse(readFileSync(path, {encoding:'utf8'}))
-}
+  return JSON.parse(readFileSync(path, { encoding: 'utf8' }));
+};
 
 export const loadGenesisBalances = (): Balances => {
-  const genesis = readFile(pathToGenesis)
-  return genesis.balances 
-}
+  const genesis = readFile(pathToGenesis);
+  return genesis.balances;
+};
 
 export const loadBlockHistory = (): BlockFs[] => {
-  if(!existsSync(pathToBlockHistory)){
-    return []
+  if (!existsSync(pathToBlockHistory)) {
+    return [];
   }
-  return readFile(pathToBlockHistory)
-}
+  return readFile(pathToBlockHistory);
+};
 
 export const saveNewBlock = (block: BlockFs) => {
   const blocks = loadBlockHistory();
-  writeFileSync(pathToBlockHistory, JSON.stringify([...blocks, block], null, 2))
-}
+  writeFileSync(pathToBlockHistory, JSON.stringify([...blocks, block], null, 2));
+};

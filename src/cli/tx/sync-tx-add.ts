@@ -1,19 +1,18 @@
-#!/usr/bin/env node
-
 import { program } from 'commander';
-import Tx from '../../model/Tx';
-import State from '../../model/State';
 import { exit } from 'process';
+
 import Block from '../../model/Block';
+import State from '../../model/State';
+import Tx from '../../model/Tx';
 
 program
   .option('-f, --from <from>', 'Sender name')
   .option('-t, --to <to>', 'Beneficiary name')
   .option('-v, --value <value>', 'Transfer ammount')
-  .parse(process.argv)
+  .parse(process.argv);
 
 const { from, to, value } = program.opts();
-if(!from || !to || !value) {
+if (!from || !to || !value) {
   console.log('You must type a sender, beneficiary and amount');
   console.log('');
   program.outputHelp();
@@ -23,5 +22,10 @@ if(!from || !to || !value) {
 const state = State.newStateFromDisk();
 const tx = new Tx(from, to, parseFloat(value));
 
-const block = new Block(state.getLatestBlockHash(), state.getLatestBlockNumber(), new Date().valueOf(), [tx])
-state.addBlock(block)
+const block = new Block(
+  state.getLatestBlockHash(),
+  state.getLatestBlockNumber(),
+  new Date().valueOf(),
+  [tx]
+);
+state.addBlock(block);
