@@ -1,7 +1,0 @@
-{
-    "genesis_time": "2021-09-13T00:00:00.000000000Z",
-    "chain_id": "sync-cli",
-    "balances": {
-        "julio": 1000000
-    }
-}
