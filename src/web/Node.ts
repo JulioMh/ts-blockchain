@@ -1,22 +1,39 @@
+import axios from 'axios';
 import express, { Express, Request, Response } from 'express';
+import { stat } from 'fs';
 import { Server } from 'http';
 
 import { Hash } from '../model/Block';
 import State from '../model/State';
+import { mapDTOToStatusRes } from './dto/Status';
 import { getBlanaces, getStatus, handleErrors, postTx, postStop } from './routes';
 
-export type PeerNode = {
+export class PeerNode {
   ip: string;
   port: number;
   isBootstrap: boolean;
   isActive: boolean;
+  constructor(ip: string, port: number, isBootstrap: boolean, isActive: boolean) {
+    this.ip = ip;
+    this.port = port;
+    this.isActive = isActive;
+    this.isBootstrap = isBootstrap
+  }
+
+  getTCPAddress() {
+    return `${this.ip}:${this.port}`
+  }
 };
 
 export type StatusRes = {
   blockHash: Hash;
   blockNumber: number;
-  peersKnown: PeerNode[];
+  peersKnown: PeerNodeMap;
 };
+
+export type PeerNodeMap = {
+  [key: string]: PeerNode
+}
 
 export default class Node {
   private app: Express;
@@ -27,12 +44,12 @@ export default class Node {
 
   private state: State | undefined;
 
-  private knownPeers: PeerNode[];
+  private knownPeers: PeerNodeMap;
 
-  constructor(port: number, knownPeers: PeerNode[]) {
+  constructor(port: number) {
     this.port = port;
     this.app = express();
-    this.knownPeers = knownPeers;
+    this.knownPeers = {};
 
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(express.json());
@@ -42,20 +59,34 @@ export default class Node {
     });
   }
 
-  newPeerNode(ip: string, port: number) {
-    this.knownPeers = [
+  newPeerNode(peer: PeerNode): Node {
+    this.knownPeers = {
       ...this.knownPeers,
-      {
-        ip,
-        port,
-        isBootstrap: true,
-        isActive: true,
-      },
-    ];
+      [peer.getTCPAddress()]: peer,
+    };
+    return this;
   }
 
   getPort() {
     return this.port;
+  }
+
+  async fetchNewBlocksAndPeers() {
+    if(!this.state) throw new Error('Node must be running');
+
+    const knownAddresses = Object.keys(this.knownPeers)
+    for(const address of knownAddresses) {
+      const response = await axios.get(`${address}/status`)
+      const peerStatus = mapDTOToStatusRes(response.data)
+      if(this.state.getLatestBlockNumber() < peerStatus.blockNumber) {
+        const newBlockCount = peerStatus.blockNumber - this.state.getLatestBlockNumber();
+      }
+      Object.keys(peerStatus.peersKnown).forEach(address => {
+        if(!knownAddresses.includes(address)){
+          this.newPeerNode(peerStatus.peersKnown[address])
+        }
+      })
+    }  
   }
 
   start() {
@@ -67,7 +98,7 @@ export default class Node {
     this.app.get('/balances', getBlanaces(this.state));
     this.app.post('/tx', postTx(this.state));
     this.app.get('/status', getStatus(this.state, this.knownPeers));
-    this.app.post('/stop', postStop(this));
+    this.app.post('/stop', postStop(this.stop));
     this.app.use(handleErrors);
   }
 

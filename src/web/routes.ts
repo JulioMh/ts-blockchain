@@ -3,12 +3,15 @@ import { NextFunction, Request, Response } from 'express';
 import Block from '../model/Block';
 import State from '../model/State';
 import Tx from '../model/Tx';
-import { statusResMap } from './dto/Status';
-import Node, { PeerNode, StatusRes } from './Node';
+import { mapStatusResToDTO } from './dto/Status';
+import Node, { PeerNodeMap, StatusRes } from './Node';
 
 export const postTx = (state: State) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const { from, to, value } = req.body;
+    if(!from || !to || !value) {
+      res.status(400).send('All parameters are required')
+    }
     const tx = new Tx(from, to, value);
 
     const block = new Block(
@@ -31,7 +34,7 @@ export const getBlanaces = (state: State) => {
   };
 };
 
-export const getStatus = (state: State, peersKnown: PeerNode[]) => {
+export const getStatus = (state: State, peersKnown: PeerNodeMap) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const statusRes: StatusRes = {
       blockHash: state.getLatestBlockHash(),
@@ -39,14 +42,14 @@ export const getStatus = (state: State, peersKnown: PeerNode[]) => {
       peersKnown,
     };
 
-    res.send(statusResMap(statusRes));
+    res.send(mapStatusResToDTO(statusRes));
     next();
   };
 };
 
-export const postStop = (node: Node) => {
+export const postStop = (stop: () => void) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    node.stop()
+    stop()
 
     res.status(200).send('Server stopped');
     next();
