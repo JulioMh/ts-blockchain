@@ -1,5 +1,5 @@
 {
-  "name": "ts-crypto-stream",
+  "name": "ts-blockchain",
   "version": "1.0.0",
   "description": "",
   "main": "./dist/cli/sync.js",
@@ -35,12 +35,9 @@
     "prettier": "^2.0.5"
   },
   "dependencies": {
-    "chalk": "^4.1.2",
-    "clear": "^0.1.0",
+    "axios": "^0.21.4",
     "commander": "^8.2.0",
     "express": "^4.17.1",
-    "figlet": "^1.5.2",
-    "nodemon": "^2.0.12",
     "path": "^0.12.7",
     "ts-node": "^10.2.1"
   }

@@ -4,7 +4,7 @@ import Block from '../model/Block';
 import State from '../model/State';
 import Tx from '../model/Tx';
 import { statusResMap } from './dto/Status';
-import { PeerNode, StatusRes } from './Node';
+import Node, { PeerNode, StatusRes } from './Node';
 
 export const postTx = (state: State) => {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -40,6 +40,15 @@ export const getStatus = (state: State, peersKnown: PeerNode[]) => {
     };
 
     res.send(statusResMap(statusRes));
+    next();
+  };
+};
+
+export const postStop = (node: Node) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    node.stop()
+
+    res.status(200).send('Server stopped');
     next();
   };
 };

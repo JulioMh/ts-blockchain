@@ -3,7 +3,7 @@ import { Server } from 'http';
 
 import { Hash } from '../model/Block';
 import State from '../model/State';
-import { getBlanaces, getStatus, handleErrors, postTx } from './endpoints';
+import { getBlanaces, getStatus, handleErrors, postTx, postStop } from './routes';
 
 export type PeerNode = {
   ip: string;
@@ -18,40 +18,7 @@ export type StatusRes = {
   peersKnown: PeerNode[];
 };
 
-export default class NodeList {
-  private static nodeList: NodeList;
-
-  private nodes: Node[];
-
-  private constructor() {
-    this.nodes = [];
-  }
-
-  availableNodes(): number[] {
-    return this.nodes.map((node) => node.getPort());
-  }
-
-  getNode(port: number): Node {
-    if (!port) throw new Error('Port is missing');
-
-    const existingNode = this.nodes.find((node) => node.getPort() === port);
-
-    if (existingNode) return existingNode;
-
-    const newNode = new Node(port);
-    this.nodes = [...this.nodes, newNode];
-
-    return newNode;
-  }
-
-  static getNodeList() {
-    if (!NodeList.nodeList) NodeList.nodeList = new NodeList();
-
-    return NodeList.nodeList;
-  }
-}
-
-export class Node {
+export default class Node {
   private app: Express;
 
   private port: number;
@@ -62,10 +29,10 @@ export class Node {
 
   private knownPeers: PeerNode[];
 
-  constructor(port: number) {
+  constructor(port: number, knownPeers: PeerNode[]) {
     this.port = port;
     this.app = express();
-    this.knownPeers = [];
+    this.knownPeers = knownPeers;
 
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(express.json());
@@ -100,6 +67,7 @@ export class Node {
     this.app.get('/balances', getBlanaces(this.state));
     this.app.post('/tx', postTx(this.state));
     this.app.get('/status', getStatus(this.state, this.knownPeers));
+    this.app.post('/stop', postStop(this));
     this.app.use(handleErrors);
   }
 
