@@ -1,7 +1,7 @@
 import axios from 'axios';
-import express, { Express, Request, Response } from 'express';
-import { stat } from 'fs';
+import express, { Express } from 'express';
 import { Server } from 'http';
+import { report } from 'process';
 
 import { Hash } from '../model/Block';
 import State from '../model/State';
@@ -14,10 +14,15 @@ export class PeerNode {
   isBootstrap: boolean;
   isActive: boolean;
   constructor(ip: string, port: number, isBootstrap: boolean, isActive: boolean) {
+    if(!ip || !port) throw new Error('IP and PORT are required')
     this.ip = ip;
     this.port = port;
     this.isActive = isActive;
     this.isBootstrap = isBootstrap
+  }
+
+  setIsActive(isActive: boolean) {
+    this.isActive = isActive
   }
 
   getTCPAddress() {
@@ -73,16 +78,26 @@ export default class Node {
 
   async fetchNewBlocksAndPeers() {
     if(!this.state) throw new Error('Node must be running');
-
+    console.log('Looking for new Peers...')
     const knownAddresses = Object.keys(this.knownPeers)
     for(const address of knownAddresses) {
-      const response = await axios.get(`${address}/status`)
+      if(!this.knownPeers[address].isActive) return
+      const response = await axios.get(`http://${address}/status`)
+        .catch(err => {
+          if(err.code === 'ECONNREFUSED') {
+            this.knownPeers[address].setIsActive(false)
+          }
+        })
+      if(!response) return
       const peerStatus = mapDTOToStatusRes(response.data)
       if(this.state.getLatestBlockNumber() < peerStatus.blockNumber) {
+        console.log('New blocks discovered')
         const newBlockCount = peerStatus.blockNumber - this.state.getLatestBlockNumber();
+        console.log(`Count: ${newBlockCount}`)
       }
       Object.keys(peerStatus.peersKnown).forEach(address => {
         if(!knownAddresses.includes(address)){
+          console.log(`Found new Peer ${address}`)
           this.newPeerNode(peerStatus.peersKnown[address])
         }
       })
@@ -91,15 +106,18 @@ export default class Node {
 
   start() {
     this.state = State.newStateFromDisk();
-    this.server = this.app.listen(this.port, () => {
-      console.log(`New node for sync-blockchain running on http://localhost:${this.port}`);
-    });
 
     this.app.get('/balances', getBlanaces(this.state));
     this.app.post('/tx', postTx(this.state));
     this.app.get('/status', getStatus(this.state, this.knownPeers));
     this.app.post('/stop', postStop(this.stop));
     this.app.use(handleErrors);
+
+    setInterval(this.fetchNewBlocksAndPeers.bind(this), 5000)
+
+    this.server = this.app.listen(this.port, () => {
+      console.log(`New node for sync-blockchain running on http://localhost:${this.port}`);
+    });
   }
 
   stop() {

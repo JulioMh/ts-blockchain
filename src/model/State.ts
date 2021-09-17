@@ -50,6 +50,8 @@ export default class State {
       (account) => (state.balances[account] = genesisBalances[account])
     );
 
+    if (!state.latestBlockHash) state.latestBlockHash = String(0).padStart(64, '0');
+    
     const blockHistory = loadBlockHistory();
     blockHistory.forEach((blockFs) => {
       const block = Block.fromBlockFs(blockFs);
@@ -57,8 +59,6 @@ export default class State {
       state.latestBlockHash = blockFs.hash;
       state.latestBlock = block;
     });
-
-    if (!state.latestBlockHash) state.latestBlockHash = String(0).padStart(64, '0');
 
     return state;
   }
