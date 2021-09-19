@@ -3,7 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 
 import { Balances } from '../model/Account';
-import Block, { BlockFs } from '../model/Block';
+import { BlockFs } from '../model/Block';
 
 const pathToGenesis = path.resolve(__dirname, '../database/genesis.json');
 const pathToBlockHistory = path.resolve(__dirname, '../database/block.json');

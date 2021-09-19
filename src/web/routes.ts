@@ -1,10 +1,16 @@
 import { NextFunction, Request, Response } from 'express';
 
-import Block from '../model/Block';
+import Block, { Hash } from '../model/Block';
 import State from '../model/State';
 import Tx from '../model/Tx';
 import { mapStatusResToDTO } from './dto/Status';
-import Node, { PeerNodeMap, StatusRes } from './Node';
+import Node, { PeerNodeMap } from './Node';
+
+export type StatusRes = {
+  blockHash: Hash;
+  blockNumber: number;
+  peersKnown: PeerNodeMap;
+};
 
 export const postTx = (state: State) => {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -16,7 +22,7 @@ export const postTx = (state: State) => {
 
     const block = new Block(
       state.getLatestBlockHash(),
-      state.getLatestBlockNumber(),
+      state.nextBlockNumber(),
       new Date().valueOf(),
       [tx]
     );
@@ -34,13 +40,13 @@ export const getBlanaces = (state: State) => {
   };
 };
 
-export const getStatus = (state: State, peersKnown: PeerNodeMap) => {
+export const getStatus = (node: Node) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    console.log(peersKnown)
+    console.log(node.getKnownPeers())
     const statusRes: StatusRes = {
-      blockHash: state.getLatestBlockHash(),
-      blockNumber: state.getLatestBlockNumber(),
-      peersKnown,
+      blockHash: node.getState()!.getLatestBlockHash(),
+      blockNumber: node.getState()!.getLatestBlockNumber(),
+      peersKnown: node.getKnownPeers(),
     };
 
     res.send(mapStatusResToDTO(statusRes));

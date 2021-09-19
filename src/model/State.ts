@@ -1,6 +1,6 @@
 import { loadBlockHistory, loadGenesisBalances, saveNewBlock } from '../utils/db';
 import { Balances } from './Account';
-import Block, { BlockFs, Hash } from './Block';
+import Block, { Hash } from './Block';
 import Tx from './Tx';
 
 export default class State {
@@ -40,7 +40,7 @@ export default class State {
   }
 
   nextBlockNumber() {
-    return this.latestBlock ? this.latestBlock?.getBlockNumber() : 0;
+    return this.getLatestBlockNumber() + 1;
   }
 
   static newStateFromDisk(): State {

@@ -1,5 +1,7 @@
 import { Hash } from '../../model/Block';
-import { PeerNode, StatusRes } from '../Node';
+import { PeerNode } from '../Node';
+import { StatusRes } from '../routes';
+
 
 type StatusResDTO = {
   block_hash: Hash;

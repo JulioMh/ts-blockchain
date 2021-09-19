@@ -1,7 +1,6 @@
 import axios from 'axios';
-import express, { Express } from 'express';
+import express, { Express, Request, Response, NextFunction } from 'express';
 import { Server } from 'http';
-import { report } from 'process';
 
 import { Hash } from '../model/Block';
 import State from '../model/State';
@@ -30,12 +29,6 @@ export class PeerNode {
   }
 };
 
-export type StatusRes = {
-  blockHash: Hash;
-  blockNumber: number;
-  peersKnown: PeerNodeMap;
-};
-
 export type PeerNodeMap = {
   [key: string]: PeerNode
 }
@@ -58,7 +51,7 @@ export default class Node {
 
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(express.json());
-    this.app.use((req, res, next) => {
+    this.app.use((req: Request, res: Response, next: NextFunction) => {
       console.log(`${req.method} -> ${req.url}`);
       next();
     });
@@ -72,8 +65,16 @@ export default class Node {
     return this;
   }
 
-  getPort() {
+  getPort(): number {
     return this.port;
+  }
+
+  getKnownPeers(): PeerNodeMap {
+    return this.knownPeers
+  }
+
+  getState(): State | undefined {
+    return this.state
   }
 
   async fetchNewBlocksAndPeers() {
@@ -107,9 +108,10 @@ export default class Node {
   start() {
     this.state = State.newStateFromDisk();
 
+    this.app.get('/statusv2', (req, res) => {console.log(this.knownPeers); res.send(this.knownPeers)})
     this.app.get('/balances', getBlanaces(this.state));
     this.app.post('/tx', postTx(this.state));
-    this.app.get('/status', getStatus(this.state, this.knownPeers));
+    this.app.get('/status', getStatus(this));
     this.app.post('/stop', postStop(this.stop));
     this.app.use(handleErrors);
 

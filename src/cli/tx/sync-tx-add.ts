@@ -26,7 +26,7 @@ const tx = new Tx(from, to, parseFloat(value));
 
 const block = new Block(
   state.getLatestBlockHash(),
-  state.getLatestBlockNumber(),
+  state.nextBlockNumber(),
   new Date().valueOf(),
   [tx]
 );
