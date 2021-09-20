@@ -1,10 +1,13 @@
-import { loadBlockHistory, loadGenesisBalances, saveNewBlock } from '../utils/db';
+import path from 'path/posix';
+import Database from '../database/Database';
 import { Balances } from './Account';
 import Block, { Hash } from './Block';
 import { GENESIS_HASH } from './Genesis';
 import Tx from './Tx';
 
 export default class State {
+  database: Database;
+  
   balances: Balances;
 
   txMempool: Tx[];
@@ -13,9 +16,10 @@ export default class State {
 
   latestBlock: Block | undefined;
 
-  private constructor() {
+  private constructor(database: Database) {
     this.balances = {};
     this.txMempool = [];
+    this.database = database;
   }
 
   addBlocks(blocks: Block[]) {
@@ -27,7 +31,7 @@ export default class State {
 
     const newHash = block.hash();
 
-    saveNewBlock(block.toBlockFs());
+    this.database.saveNewBlock(block.toBlockFs());
     this.latestBlockHash = newHash;
     this.latestBlock = block;
   }
@@ -48,16 +52,16 @@ export default class State {
     return this.getLatestBlockNumber() + 1;
   }
 
-  static newStateFromDisk(): State {
-    const state = new State();
-    const genesisBalances = loadGenesisBalances();
+  static newStateFromDisk(dataDir: string = path.resolve(__dirname, '../database')): State {
+    const state = new State(new Database(dataDir));
+    const genesisBalances = state.database.loadGenesisBalances();
     Object.keys(genesisBalances).forEach(
       (account) => (state.balances[account] = genesisBalances[account])
     );
 
     if (!state.latestBlockHash) state.latestBlockHash = GENESIS_HASH;
     
-    const blockHistory = loadBlockHistory();
+    const blockHistory = state.database.loadBlockHistory();
     blockHistory.forEach((blockFs) => {
       const block = Block.fromBlockFs(blockFs);
       state.applyBlock(block);
