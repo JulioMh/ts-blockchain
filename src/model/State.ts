@@ -1,6 +1,7 @@
 import { loadBlockHistory, loadGenesisBalances, saveNewBlock } from '../utils/db';
 import { Balances } from './Account';
 import Block, { Hash } from './Block';
+import { GENESIS_HASH } from './Genesis';
 import Tx from './Tx';
 
 export default class State {
@@ -15,6 +16,10 @@ export default class State {
   private constructor() {
     this.balances = {};
     this.txMempool = [];
+  }
+
+  addBlocks(blocks: Block[]) {
+    blocks.forEach(block => this.addBlock(block))
   }
 
   addBlock(block: Block) {
@@ -50,7 +55,7 @@ export default class State {
       (account) => (state.balances[account] = genesisBalances[account])
     );
 
-    if (!state.latestBlockHash) state.latestBlockHash = String(0).padStart(64, '0');
+    if (!state.latestBlockHash) state.latestBlockHash = GENESIS_HASH;
     
     const blockHistory = loadBlockHistory();
     blockHistory.forEach((blockFs) => {

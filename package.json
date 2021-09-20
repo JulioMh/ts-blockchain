@@ -4,7 +4,7 @@
   "description": "",
   "main": "./dist/cli/sync.js",
   "bin": {
-    "sync-cli": "./dist/cli/sync.js"
+    "tsb": "./dist/cli/sync.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

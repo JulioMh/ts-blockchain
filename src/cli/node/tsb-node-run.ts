@@ -4,6 +4,7 @@ import { program } from 'commander';
 import Node, { PeerNode } from '../../web/Node';
 
 program
+    .option('-d, --data-dir <path>', 'Path to database folder')
     .option('-p, --port <port>', 'Node port to be used, default to 8080')
     .option('-b, --bootstrap <bootstrap>', 'Bootstrap node. Format: <ip>:<port>')
     .option('-k, --known-peer <knownPeer>', 'Known Peer. Format: <ip>:<port>')

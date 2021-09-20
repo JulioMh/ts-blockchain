@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import Block, { Hash } from '../model/Block';
 import State from '../model/State';
 import Tx from '../model/Tx';
+import { getBlocksAfter } from '../utils/db';
 import { mapStatusResToDTO } from './dto/Status';
 import Node, { PeerNodeMap } from './Node';
 
@@ -62,6 +63,17 @@ export const postStop = (stop: () => void) => {
     next();
   };
 };
+
+export const getBlocks = (state: State) => {
+  return (req: Request, res: Response, next: NextFunction) => { 
+    const { from } = req.query;
+    if(!from || typeof from !== 'string') res.status(400).send('Missing from query param')
+    const blocks = getBlocksAfter(from as string)
+
+    res.status(200).send(blocks.map(block => block.toBlockFs()))
+    next();
+  }
+}
 
 export const handleErrors = (error: Error, req: Request, res: Response, next: NextFunction) => {
   console.log('------------------------------------------------------------------');

@@ -2,10 +2,10 @@ import axios from 'axios';
 import express, { Express, Request, Response, NextFunction } from 'express';
 import { Server } from 'http';
 
-import { Hash } from '../model/Block';
+import Block, { BlockFs } from '../model/Block';
 import State from '../model/State';
 import { mapDTOToStatusRes } from './dto/Status';
-import { getBlanaces, getStatus, handleErrors, postTx, postStop } from './routes';
+import { getBlanaces, getStatus, handleErrors, postTx, postStop, StatusRes, getBlocks } from './routes';
 
 export class PeerNode {
   ip: string;
@@ -77,45 +77,66 @@ export default class Node {
     return this.state
   }
 
-  async fetchNewBlocksAndPeers() {
-    if(!this.state) throw new Error('Node must be running');
-    console.log('Looking for new Peers...')
+  async syncBlocks(address: string, status: StatusRes) {
+    if(this.state!.getLatestBlockNumber() >= status.blockNumber) return
+    console.log(`${status.blockNumber - this.state!.getLatestBlockNumber()} new blocks discovered from ${address}`)
+
+    const response = await axios.get(`http://${address}/blocks?from=${this.state!.getLatestBlockHash()}`)
+      .catch(err => {
+        if(err.code === 'ECONNREFUSED') {
+          this.knownPeers[address].setIsActive(false)
+        }
+      })
+    if(!response) return
+    this.state!.addBlocks(response.data.map((blockFs: BlockFs) => Block.fromBlockFs(blockFs)))
+  }
+
+  syncKnownPeers(peerStatus: StatusRes) {
     const knownAddresses = Object.keys(this.knownPeers)
-    for(const address of knownAddresses) {
-      if(!this.knownPeers[address].isActive) return
+    Object.keys(peerStatus.peersKnown).forEach(address => {
+      if(!knownAddresses.includes(address)){
+        console.log(`Found new Peer ${address}`)
+        this.newPeerNode(peerStatus.peersKnown[address])
+      }
+    })
+  }
+
+  async queryPeerStatus(address: string): Promise<StatusRes | undefined> {
+    if(!this.knownPeers[address].isActive) return Promise.reject(undefined)
       const response = await axios.get(`http://${address}/status`)
         .catch(err => {
           if(err.code === 'ECONNREFUSED') {
             this.knownPeers[address].setIsActive(false)
           }
         })
-      if(!response) return
-      const peerStatus = mapDTOToStatusRes(response.data)
-      if(this.state.getLatestBlockNumber() < peerStatus.blockNumber) {
-        console.log('New blocks discovered')
-        const newBlockCount = peerStatus.blockNumber - this.state.getLatestBlockNumber();
-        console.log(`Count: ${newBlockCount}`)
-      }
-      Object.keys(peerStatus.peersKnown).forEach(address => {
-        if(!knownAddresses.includes(address)){
-          console.log(`Found new Peer ${address}`)
-          this.newPeerNode(peerStatus.peersKnown[address])
-        }
-      })
-    }  
+      if(!response) return Promise.reject(undefined)
+      return Promise.resolve(mapDTOToStatusRes(response.data))
+  }
+
+  async doSync() {
+    if(!this.state) throw new Error('Node must be running');
+    console.log('Looking for new Peers...')
+    const knownAddresses = Object.keys(this.knownPeers)
+    for(const address of knownAddresses) {
+      const status = await this.queryPeerStatus(address)
+      if(!status) continue;
+      this.syncBlocks(address, status)
+      this.syncKnownPeers(status)
+    }
+
   }
 
   start() {
     this.state = State.newStateFromDisk();
 
-    this.app.get('/statusv2', (req, res) => {console.log(this.knownPeers); res.send(this.knownPeers)})
     this.app.get('/balances', getBlanaces(this.state));
     this.app.post('/tx', postTx(this.state));
     this.app.get('/status', getStatus(this));
     this.app.post('/stop', postStop(this.stop));
+    this.app.get('/blocks', getBlocks(this.state));
     this.app.use(handleErrors);
 
-    setInterval(this.fetchNewBlocksAndPeers.bind(this), 5000)
+    setInterval(this.doSync.bind(this), 45000)
 
     this.server = this.app.listen(this.port, () => {
       console.log(`New node for sync-blockchain running on http://localhost:${this.port}`);
