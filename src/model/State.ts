@@ -1,4 +1,3 @@
-import path from 'path/posix';
 import Database from '../database/Database';
 import { Balances } from './Account';
 import Block, { Hash } from './Block';
@@ -52,7 +51,7 @@ export default class State {
     return this.getLatestBlockNumber() + 1;
   }
 
-  static newStateFromDisk(dataDir: string = path.resolve(__dirname, '../database')): State {
+  static newStateFromDisk(dataDir: string): State {
     const state = new State(new Database(dataDir));
     const genesisBalances = state.database.loadGenesisBalances();
     Object.keys(genesisBalances).forEach(

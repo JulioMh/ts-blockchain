@@ -2,13 +2,13 @@
   "name": "ts-blockchain",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/cli/sync.js",
+  "main": "./dist/cli/tsb.js",
   "bin": {
-    "tsb": "./dist/cli/sync.js"
+    "tsb": "./dist/cli/tsb.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc -p .; node ./dist/cli/sync.js",
+    "start": "tsc -p .; node ./dist/cli/tsb.js",
     "build": "tsc -p .; npm i --global ./",
     "lint": "eslint --ignore-path .gitignore . --ext .ts",
     "lint:fix": "npm run lint -- --fix"

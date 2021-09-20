@@ -17,7 +17,7 @@ export default class Database {
 
     loadGenesisBalances() {
         if (!existsSync(this.genesisPath)) {
-            writeFileSync(`${this.genesisPath}/genesis.json`, JSON.stringify(GENESIS_FILE, null, 2))
+            writeFileSync(this.genesisPath, JSON.stringify(GENESIS_FILE, null, 2))
             return GENESIS_FILE;
         }
         return this.readFile(this.genesisPath).balances

@@ -44,10 +44,13 @@ export default class Node {
 
   private knownPeers: PeerNodeMap;
 
-  constructor(port: number) {
+  private databasePath: string;
+
+  constructor(port: number, databasePath: string) {
     this.port = port;
     this.app = express();
     this.knownPeers = {};
+    this.databasePath = databasePath;
 
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(express.json());
@@ -123,11 +126,10 @@ export default class Node {
       this.syncBlocks(address, status)
       this.syncKnownPeers(status)
     }
-
   }
 
   start() {
-    this.state = State.newStateFromDisk();
+    this.state = State.newStateFromDisk(this.databasePath);
 
     this.app.get('/balances', getBlanaces(this.state));
     this.app.post('/tx', postTx(this.state));
