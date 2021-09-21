@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import Block, { BlockFs } from "../model/Block";
 import { GENESIS_FILE } from "../model/Genesis";
 
@@ -7,6 +7,9 @@ export default class Database {
     blockHistoryPath: string;
 
     constructor(databasePath: string) {
+        if(!existsSync(databasePath)){
+          mkdirSync(databasePath)
+        }
         this.genesisPath = `${databasePath}/genesis.json`;
         this.blockHistoryPath = `${databasePath}/blocks.json`;
     }

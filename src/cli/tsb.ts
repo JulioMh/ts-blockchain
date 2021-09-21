@@ -3,9 +3,9 @@
 import { program } from 'commander';
 import path from 'path';
 
-const pathToTx = path.resolve(__dirname, './tx/sync-tx.js');
-const pathToBalances = path.resolve(__dirname, './balances/sync-balances.js');
-const pathToRun = path.resolve(__dirname, './node/sync-node.js');
+const pathToTx = path.resolve(__dirname, './tx/tsb-tx.js');
+const pathToBalances = path.resolve(__dirname, './balances/tsb-balances.js');
+const pathToRun = path.resolve(__dirname, './node/tsb-node.js');
 
 program
   .version('0.0.1')

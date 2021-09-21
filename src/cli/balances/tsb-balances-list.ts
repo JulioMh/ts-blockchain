@@ -7,14 +7,11 @@ import path from 'path';
 import State from '../../model/State';
 
 program
-  .option('-d, --data-dir <databasePath>', 'Path to database folder')
+  .option('-d, --data-dir <dataDir>', 'Path to database folder')
 
-const { databasePath = '../../database' } = program.opts();
+const { dataDir = '../../database' } = program.opts();
 
-const resolvedDatabasePath = path.resolve(__dirname, databasePath);
-if(!existsSync(resolvedDatabasePath)){
-    mkdirSync(resolvedDatabasePath)
-}
+const resolvedDatabasePath = path.resolve(__dirname, dataDir);
 
 const state: State = State.newStateFromDisk(resolvedDatabasePath);
 console.log(`Accounts balances at ${state.latestBlockHash.substring(0, 12)}...`);
