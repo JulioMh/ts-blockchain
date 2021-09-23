@@ -1,0 +1,19 @@
+[
+  {
+    "hash": "fdab893de5ae977e6c03b549f41197b44713afc6fcc902a3a8334e9ddada0aec",
+    "block": {
+      "header": {
+        "parent": "0000000000000000000000000000000000000000000000000000000000000000",
+        "number": 1,
+        "time": 1632383838923
+      },
+      "payload": [
+        {
+          "from": "julio",
+          "to": "pepe",
+          "value": 122
+        }
+      ]
+    }
+  }
+]

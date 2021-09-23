@@ -11,7 +11,7 @@ program
 
 const { dataDir = '../../database' } = program.opts();
 
-const resolvedDatabasePath = path.resolve(__dirname, dataDir);
+const resolvedDatabasePath = path.resolve(process.cwd(), dataDir);
 
 const state: State = State.newStateFromDisk(resolvedDatabasePath);
 console.log(`Accounts balances at ${state.latestBlockHash.substring(0, 12)}...`);

@@ -14,8 +14,7 @@ program.parse(process.argv);
 
 const { dataDir = '../../database', port = 8080, bootstrap, knownPeer } = program.opts();
 
-const resolvedDatabasePath = path.resolve(__dirname, dataDir);
-
+const resolvedDatabasePath = path.resolve(process.cwd(), dataDir);
 const node = new Node(port, resolvedDatabasePath);
 if(bootstrap) {
     const [bootstrapIp, bootstrapPort] = bootstrap.split(':');

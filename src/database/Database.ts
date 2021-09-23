@@ -41,11 +41,8 @@ export default class Database {
     getBlocksAfter(hash: string): Block[] {
         type loop = { collect: boolean, newBlocks: Block[] };
         return this.loadBlockHistory().reduce((acc: loop, blockFs: BlockFs) => {
-          if(blockFs.hash === hash) {
-            return {
-              ...acc,
-              collect: true
-            }
+          if(blockFs.block.header.parent === hash) {
+            acc.collect = true
           }
           if(acc.collect) {
             return {

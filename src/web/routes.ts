@@ -42,7 +42,6 @@ export const getBlanaces = (state: State) => {
 
 export const getStatus = (node: Node) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    console.log(node.getKnownPeers())
     const statusRes: StatusRes = {
       blockHash: node.getState()!.getLatestBlockHash(),
       blockNumber: node.getState()!.getLatestBlockNumber(),

@@ -18,7 +18,7 @@ program
 
 const { dataDir = '../../database', from, to, value } = program.opts();
 
-const resolvedDatabasePath = path.resolve(__dirname, dataDir);
+const resolvedDatabasePath = path.resolve(process.cwd(), dataDir);
 
 if (!from || !to || !value) {
   console.log('You must type a sender, beneficiary and amount');

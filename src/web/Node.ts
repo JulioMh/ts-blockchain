@@ -84,14 +84,15 @@ export default class Node {
     if(this.state!.getLatestBlockNumber() >= status.blockNumber) return
     console.log(`${status.blockNumber - this.state!.getLatestBlockNumber()} new blocks discovered from ${address}`)
 
-    const response = await axios.get(`http://${address}/blocks?from=${this.state!.getLatestBlockHash()}`)
+    await axios.get(`http://${address}/blocks?from=${this.state!.getLatestBlockHash()}`)
+      .then(response => {
+        this.state!.addBlocks(response.data.map((blockFs: BlockFs) => Block.fromBlockFs(blockFs)))
+      })
       .catch(err => {
         if(err.code === 'ECONNREFUSED') {
           this.knownPeers[address].setIsActive(false)
         }
-      })
-    if(!response) return
-    this.state!.addBlocks(response.data.map((blockFs: BlockFs) => Block.fromBlockFs(blockFs)))
+      })    
   }
 
   syncKnownPeers(peerStatus: StatusRes) {
@@ -123,8 +124,8 @@ export default class Node {
     for(const address of knownAddresses) {
       const status = await this.queryPeerStatus(address)
       if(!status) continue;
-      this.syncBlocks(address, status)
       this.syncKnownPeers(status)
+      await this.syncBlocks(address, status)
     }
   }
 
